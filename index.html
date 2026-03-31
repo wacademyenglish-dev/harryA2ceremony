@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLFLIX | The Sorting Ceremony (A2) - Premium Edition</title>
+    <!-- Cinematic Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #050508; 
+            --brand-red: #E50914; 
+            --magic-gold: #D4AF37;
+            --magic-cyan: #00E5FF;
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0B0;
+            --glass-bg: rgba(10, 12, 20, 0.85);
+            --glass-border: rgba(212, 175, 55, 0.25); 
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow: hidden; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACKGROUNDS & MAGIC PARTICLES --- */
+        .ambient-orbs {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .bg-image {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+            z-index: 1;
+            filter: grayscale(20%) contrast(110%);
+        }
+        .bg-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(3,4,8,1) 5%, rgba(3,4,8,0.5) 100%);
+            z-index: 2;
+        }
+        
+        .floating-item {
+            position: absolute;
+            font-size: 3.5rem;
+            color: rgba(212, 175, 55, 0.15); 
+            z-index: 3;
+            pointer-events: none;
+            animation: floatMagical 12s ease-in-out infinite alternate;
+        }
+        @keyframes floatMagical {
+            0% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-30px) rotate(10deg) scale(1.1); }
+            100% { transform: translateY(10px) rotate(-5deg) scale(0.9); }
+        }
+
+        /* --- NOTIFICATIONS --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(229, 9, 20, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white; padding: 15px 30px; border-radius: 30px;
+            font-weight: 600; font-size: 1.1rem; z-index: 9999;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            opacity: 0; pointer-events: none;
+            display: flex; align-items: center; gap: 10px;
+        }
+        #toast-container.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 5%;
+            background: linear-gradient(to bottom, rgba(2,6,10,1) 0%, rgba(2,6,10,0) 100%);
+            position: fixed; top: 0; width: 100%; z-index: 100;
+        }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo { color: var(--brand-red); font-family: var(--font-title); font-size: 32px; font-weight: 900; letter-spacing: 3px; text-shadow: 0 0 15px rgba(229,9,20,0.4); }
+        .labs-badge { border: 1px solid var(--magic-gold); color: var(--magic-gold); font-size: 10px; padding: 3px 8px; font-weight: bold; border-radius: 4px; text-transform: uppercase; }
+        
+        .nav-controls { display: flex; gap: 10px; }
+        .icon-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 10px 18px; border-radius: 30px; cursor: pointer;
+            font-size: 14px; transition: 0.3s; backdrop-filter: blur(10px);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .icon-btn:hover { background: rgba(255,255,255,0.15); border-color: var(--magic-cyan); color: var(--magic-cyan); }
+
+        /* --- SLIDE CONTAINER --- */
+        .slide-container {
+            flex: 1; position: relative; width: 100%; height: 100%;
+            z-index: 10; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--magic-gold) transparent;
+        }
+        .slide {
+            min-height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 130px 6% 150px 6%; opacity: 0; transition: opacity 0.4s ease; position: relative;
+        }
+        .slide.active[data-hub="true"] { padding-bottom: 400px; }
+        .slide.active { display: flex; opacity: 1; }
+        
+        .content-wrapper { max-width: 1200px; width: 100%; text-align: center; }
+
+        h1 { font-family: var(--font-title); font-size: 5rem; letter-spacing: 3px; text-shadow: 0 0 25px rgba(212,175,55,0.3); margin-bottom: 20px; }
+        h2 { font-family: var(--font-title); font-size: 3.2rem; margin-bottom: 30px; color: var(--magic-gold); text-shadow: 0 2px 10px rgba(0,0,0,0.5); text-transform: uppercase;}
+        p { font-size: 1.5rem; line-height: 1.8; color: #f0f0f0; margin-bottom: 30px; }
+
+        /* --- GLASS PANELS --- */
+        .glass-panel {
+            background: var(--glass-bg); backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); padding: 50px; border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: left; width: 100%;
+        }
+        .panel-split { display: flex; gap: 40px; align-items: center; }
+        .panel-split > div { flex: 1; }
+        .panel-divider { border-left: 2px solid rgba(255,255,255,0.1); padding-left: 40px; }
+
+        @media (max-width: 900px) {
+            .panel-split { flex-direction: column; gap: 20px; }
+            .panel-divider { border-left: none; padding-left: 0; border-top: 2px solid rgba(255,255,255,0.1); padding-top: 20px; }
+            h1 { font-size: 3.5rem; } h2 { font-size: 2.2rem; }
+        }
+
+        /* --- INTERACTION BUTTONS --- */
+        .grid-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 30px; width: 100%; }
+        .try-btn, .quiz-btn {
+            background: rgba(10, 20, 30, 0.9); border: 2px solid rgba(255,255,255,0.05);
+            color: white; padding: 25px; border-radius: 12px; font-size: 1.4rem; cursor: pointer; transition: 0.3s;
+            font-weight: 500; display: flex; align-items: center; gap: 15px; justify-content: center; text-align: left;
+        }
+        .try-btn i, .quiz-btn i { font-size: 1.6rem; color: rgba(255,255,255,0.5); transition: 0.3s; }
+        .try-btn:hover, .quiz-btn:hover { border-color: var(--magic-cyan); background: rgba(0, 242, 255, 0.05); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .try-btn:hover i, .quiz-btn:hover i { color: var(--magic-cyan); }
+        
+        .try-btn.correct { background: rgba(0, 242, 255, 0.2) !important; border-color: var(--magic-cyan) !important; box-shadow: 0 0 20px rgba(0,242,255,0.3); }
+        .try-btn.correct i { color: var(--magic-cyan); }
+        .try-btn.error { background: rgba(229, 9, 20, 0.25); border-color: var(--brand-red); animation: shake 0.4s; }
+        .try-btn.error i { color: var(--brand-red); }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+        /* --- HOUSE RESULT STYLES --- */
+        .house-result-box {
+            text-align: center; padding: 60px; border-radius: 20px; transition: all 1s ease;
+            border: 2px solid transparent; box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            position: relative; overflow: hidden;
+        }
+        .house-result-box::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            animation: rotateGlow 10s linear infinite; z-index: 0; pointer-events: none;
+        }
+        @keyframes rotateGlow { 100% { transform: rotate(360deg); } }
+        .house-content { position: relative; z-index: 1; }
+        #res-house-name { font-family: var(--font-title); font-size: 5rem; letter-spacing: 5px; margin: 20px 0; font-weight: 900;}
+
+        /* --- SPEAKING HUB --- */
+        #hub-toggle-btn {
+            position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 229, 255, 0.15); border: 1px solid var(--magic-cyan);
+            color: white; padding: 12px 30px; border-radius: 30px; font-weight: bold; font-size: 1.2rem;
+            cursor: pointer; z-index: 140; box-shadow: 0 4px 20px rgba(0,229,255,0.3);
+            display: none; transition: 0.3s; backdrop-filter: blur(10px); align-items: center; gap: 10px;
+        }
+        #hub-toggle-btn:hover { background: var(--magic-cyan); color: black; transform: translateX(-50%) scale(1.05); }
+
+        .speaking-hub {
+            position: fixed; bottom: 110px; left: 50%; width: 90%; max-width: 1200px;
+            background: rgba(5, 7, 12, 0.98); backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border); border-top: 4px solid var(--magic-cyan); border-radius: 16px;
+            padding: 30px 45px; z-index: 150; box-shadow: 0 -15px 50px rgba(0,0,0,0.95);
+            transform: translate(-50%, 150%); opacity: 0; pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .speaking-hub.open { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+        .hub-header { color: var(--magic-cyan); font-family: var(--font-title); font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .close-hub-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%;}
+        .close-hub-btn:hover { background: rgba(229,9,20,0.2); color: var(--brand-red); transform: scale(1.1); }
+        .hub-question { font-size: 1.6rem; font-weight: 500; margin-bottom: 20px; color: white; line-height: 1.5; }
+        .starters-container { display: flex; gap: 12px; flex-wrap: wrap; }
+        .starter-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #ddd; padding: 12px 25px; border-radius: 40px; font-size: 1.1rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .starter-btn:hover { background: white; color: black; border-color: white; transform: scale(1.05); }
+        .starter-btn.clicked { background: var(--magic-cyan); color: black; font-weight: bold; border-color: var(--magic-cyan);}
+
+        /* --- BOTTOM BAR --- */
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 110px;
+            background: #000; z-index: 160; border-top: 1px solid #111;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 5%;
+        }
+        .nav-btn { background: transparent; border: 1px solid #333; color: white; padding: 14px 28px; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .nav-btn:hover:not(:disabled) { border-color: var(--magic-gold); color: var(--magic-gold); }
+        .nav-btn.next { background: white; color: black; border: none; font-size: 18px; border-radius: 40px; padding: 15px 40px; display: flex; align-items: center; gap: 12px; font-weight: 700; box-shadow: 0 0 20px rgba(255,255,255,0.2);}
+        .nav-btn.next:hover:not(:disabled) { background: var(--magic-gold); transform: scale(1.05); box-shadow: 0 0 30px rgba(212,175,55,0.5);}
+        .nav-btn.skip { border-color: transparent; color: #555; font-size: 14px; display: none; }
+        .nav-btn.skip:hover { color: white; text-decoration: underline; }
+
+        .progress-container { position: fixed; bottom: 110px; left: 0; width: 100%; height: 6px; background: rgba(255,255,255,0.05); z-index: 155; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--magic-cyan), var(--magic-gold)); width: 0%; transition: 0.6s; box-shadow: 0 0 15px var(--magic-gold); }
+
+        /* --- SIDEBAR DICTIONARY --- */
+        .sidebar-panel {
+            position: fixed; top: 0; right: -600px; width: 600px; height: 100vh;
+            background: rgba(5, 7, 12, 0.99); z-index: 210; padding: 70px 50px;
+            transition: right 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex; flex-direction: column; border-left: 2px solid var(--glass-border);
+            box-shadow: -30px 0 100px rgba(0,0,0,1);
+        }
+        .sidebar-panel.right-open { right: 0; }
+        .sidebar-close { align-self: flex-end; cursor: pointer; font-size: 35px; color: white; background: rgba(255,255,255,0.05); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; transition: 0.3s;}
+        .sidebar-close:hover { background: var(--brand-red); transform: rotate(90deg); color: white;}
+
+        .dict-word { font-family: var(--font-title); font-size: 4.5rem; color: var(--magic-gold); margin-bottom: 10px; text-shadow: 0 0 20px rgba(212,175,55,0.3); text-transform: uppercase; display: flex; align-items: center; gap: 15px;}
+        .dict-label { color: var(--magic-cyan); font-family: var(--font-title); font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 10px; margin-top: 30px; text-transform: uppercase; font-weight: bold; display: flex; align-items: center; gap: 8px;}
+        .dict-text { font-size: 1.5rem; line-height: 1.5; color: white; }
+        .dict-example { font-style: italic; color: white; border-left: 3px solid var(--magic-gold); padding-left: 20px; }
+        
+        textarea { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid #333; color: white; padding: 25px; border-radius: 15px; font-size: 1.2rem; outline: none; resize: none; font-family: var(--font-body); }
+
+        /* --- VIDEO CONTAINER --- */
+        .video-wrapper {
+            width: 100%; max-width: 1100px; margin: 0 auto; aspect-ratio: 16/9; 
+            background: #000; border-radius: 20px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 30px 100px rgba(0,0,0,0.9); position: relative; 
+        }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+        /* --- CLICKABLES & LISTS --- */
+        .clickable { 
+            color: var(--magic-gold); text-decoration: underline; text-decoration-style: dashed;
+            text-decoration-color: var(--magic-gold); text-underline-offset: 6px; cursor: pointer; transition: 0.3s; font-weight: bold; 
+        }
+        .clickable:hover { background: rgba(212, 175, 55, 0.15); border-radius: 4px; text-decoration-color: transparent; }
+        
+        .step-id { color: white; font-size: 18px; font-family: var(--font-title); letter-spacing: 2px; }
+        .step-id span { color: var(--magic-gold); font-weight: 900; }
+        .dark-list { list-style: none; text-align: left; margin: 0 auto; max-width: 900px; }
+        .dark-list li { font-size: 1.8rem; margin-bottom: 30px; color: #eeeeee; line-height: 1.7; display: flex; align-items: flex-start; gap: 20px;}
+        .dark-list li i { color: var(--magic-gold); font-size: 1.6rem; margin-top: 5px; width: 30px; text-align: center;}
+
+        /* Chat */
+        .chat-box { background: #050505; padding: 30px; border-radius: 20px; border: 1px solid #1a1a1a; max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .msg { padding: 18px 25px; border-radius: 20px; font-size: 1.4rem; max-width: 85%; line-height: 1.5; }
+        .msg-l { background: #1c252d; color: white; align-self: flex-start; border-bottom-left-radius: 5px; }
+        .msg-r { background: var(--magic-cyan); color: black; font-weight: 700; align-self: flex-end; border-bottom-right-radius: 5px; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Background Layer -->
+    <div class="ambient-orbs">
+        <div class="bg-image" style="background-image: url('https://images.unsplash.com/photo-1541961017774-22349e4a1262?q=80&w=2000');"></div>
+        <div class="bg-overlay"></div>
+        <i class="fa-solid fa-hat-wizard floating-item" style="top: 15%; left: 15%; animation-duration: 18s;"></i>
+        <i class="fa-solid fa-wand-magic-sparkles floating-item" style="bottom: 25%; right: 10%; animation-duration: 22s;"></i>
+    </div>
+
+    <!-- Toasts -->
+    <div id="toast-container">
+        <i class="fa-solid fa-triangle-exclamation"></i> <span id="toast-msg">Message</span>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo-container">
+            <div class="logo">WOLFLIX</div>
+            <div class="labs-badge">Interactive Engine</div>
+        </div>
+        <div class="nav-controls">
+            <button class="icon-btn" onclick="toggleSidebar('whiteboard')"><i class="fa-solid fa-chalkboard-user"></i> Whiteboard</button>
+            <button class="icon-btn" onclick="toggleFullscreen()"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+        </div>
+    </nav>
+
+    <!-- Sidebars -->
+    <div class="sidebar-panel" id="whiteboard">
+        <button class="sidebar-close" onclick="toggleSidebar('whiteboard')"><i class="fa-solid fa-xmark"></i></button>
+        <h2 style="color: var(--magic-cyan); font-family: var(--font-title); font-size: 2.8rem; margin-bottom: 25px;"><i class="fa-solid fa-pen-nib"></i> Live Notes</h2>
+        <textarea placeholder="Type grammar notes, vocabulary, or corrections here..."></textarea>
+    </div>
+
+    <div class="sidebar-panel" id="vocab-panel" style="border-left-color: var(--magic-gold);">
+        <button class="sidebar-close" onclick="toggleSidebar('vocab-panel')"><i class="fa-solid fa-xmark"></i></button>
+        <h1 id="v-word" class="dict-word"><i class="fa-solid fa-scroll"></i> Word</h1>
+        
+        <div class="dict-label"><i class="fa-solid fa-book-open"></i> MEANING</div>
+        <p id="v-meaning" class="dict-text">...</p>
+        
+        <div class="dict-label"><i class="fa-solid fa-quote-left"></i> EXAMPLE</div>
+        <p id="v-example" class="dict-example">...</p>
+        
+        <div style="margin-top: auto; padding: 30px; background: rgba(0,229,255,0.05); border-radius: 15px; border: 1px solid rgba(0,229,255,0.2);">
+            <div class="dict-label" style="margin-top: 0; color: var(--magic-cyan);"><i class="fa-solid fa-comments"></i> CONVERSATION TASK</div>
+            <p id="v-question" style="font-size: 1.4rem; margin-top: 15px; color: white; line-height: 1.5;">...</p>
+        </div>
+    </div>
+
+    <!-- MAIN SLIDES (30 SCENES) -->
+    <main class="slide-container" id="slides-container">
+        
+        <!-- 1. TEACHER GUIDE -->
+        <div class="slide">
+            <div class="content-wrapper">
+                <h2><i class="fa-solid fa-hat-wizard"></i> Director's Briefing</h2>
+                <div class="glass-panel panel-split">
+                    <div>
+                        <p style="color: var(--magic-cyan); font-weight: bold; font-family: var(--font-title); font-size: 2.2rem; margin-bottom: 20px;">THE SORTING CEREMONY</p>
+                        <p style="font-size: 1.5rem; color: #ddd; line-height: 1.6;">Level: A2 (Pre-Intermediate).<br><br><b>Grammar:</b> Future with WILL (Predictions) & Basic Adjectives.</p>
+                    </div>
+                    <div class="panel-divider">
+                        <ul class="dark-list" style="margin:0;">
+                            <li><i class="fa-solid fa-film"></i> <div><b>Video Chunks:</b> The video is cut into 4 pieces. We watch them step-by-step.</div></li>
+                            <li><i class="fa-solid fa-hat-wizard"></i> <div><b>The Quiz:</b> The lesson starts with a real Personality Quiz.</div></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. COVER -->
+        <div class="slide" data-hub="true" data-question="Do you like stories about magic?" data-s1="Yes, I love magic because..." data-s2="No, I prefer stories about...">
+            <div class="content-wrapper">
+                <div style="color: var(--magic-gold); font-family: var(--font-title); font-size: 1.6rem; letter-spacing: 5px; margin-bottom: 15px; text-shadow: 0 0 10px black;"><i class="fa-solid fa-film"></i> A WOLFLIX PRODUCTION</div>
+                <h1 style="font-size: 6.5rem; letter-spacing: 5px;">THE SORTING CEREMONY</h1>
+                <p style="font-family: var(--font-title); font-size: 2.2rem; letter-spacing: 8px; color: var(--text-muted); text-transform: uppercase; text-shadow: 0 0 10px black;">Where do you belong?</p>
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 50px;">
+                    <span style="border: 2px solid var(--magic-gold); color: var(--magic-gold); background: rgba(0,0,0,0.5); padding: 8px 20px; font-weight: bold; border-radius: 6px; font-size: 1.4rem;">LEVEL A2</span>
+                    <span style="color: #fff; font-size: 1.4rem; padding-top: 8px; text-shadow: 0 0 10px black;">WILL & ADJECTIVES</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. WARM UP (VISUAL) -->
+        <div class="slide bg-slide" data-hub="true" data-question="Look at the candles. How do you think they are flying?" data-s1="I think they are flying because..." data-s2="Maybe it is a trick with..." style="background-image: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000');">
+            <div class="content-wrapper">
+                <h2 style="text-shadow: 0 2px 20px black;">The Great Hall</h2>
+                <div class="glass-panel" style="background: rgba(10,12,20,0.85);">
+                    <p>Welcome to the magic school. Look up at the ceiling. There are hundreds of candles floating in the air. The students are nervous. Today is a very important day.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. THE QUIZ INTRO -->
+        <div class="slide" data-hub="false">
+            <div class="content-wrapper">
+                <h2><i class="fa-solid fa-hat-wizard"></i> The Hat Wants to Know You</h2>
+                <div class="glass-panel" style="text-align: center; padding: 60px;">
+                    <p style="font-size: 2rem; margin-bottom: 30px;">Every new student must wear the magical hat. The hat looks inside your head to see who you really are.</p>
+                    <p style="color: var(--magic-cyan); font-size: 1.5rem; font-weight: bold;">Let's find out your house. Answer 3 questions.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. QUIZ Q1 -->
+        <div class="slide" data-lock="true" data-hub="true" data-question="Why did you choose that animal? Is it like you?" data-s1="I chose this animal because..." data-s2="This animal is like me because we are both...">
+            <div class="content-wrapper">
+                <h2>Question 1</h2>
+                <div class="glass-panel">
+                    <p style="font-size: 2.2rem; text-align: center; font-family: var(--font-title);">What is your favorite animal from this list?</p>
+                    <div class="grid-options" style="margin-top: 40px;">
+                        <button class="quiz-btn" onclick="selectHouse('G', this)"><i class="fa-solid fa-hippo"></i> The brave Lion</button>
+                        <button class="quiz-btn" onclick="selectHouse('S', this)"><i class="fa-solid fa-staff-snake"></i> The quick Snake</button>
+                        <button class="quiz-btn" onclick="selectHouse('R', this)"><i class="fa-solid fa-crow"></i> The smart Eagle</button>
+                        <button class="quiz-btn" onclick="selectHouse('H', this)"><i class="fa-solid fa-dog"></i> The friendly Dog</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. QUIZ Q2 -->
+        <div class="slide" data-lock="true" data-hub="true" data-question="How does this color make you feel?" data-s1="This color makes me feel..." data-s2="I like this color because it reminds me of...">
+            <div class="content-wrapper">
+                <h2>Question 2</h2>
+                <div class="glass-panel">
+                    <p style="font-size: 2.2rem; text-align: center; font-family: var(--font-title);">Which color do you prefer?</p>
+                    <div class="grid-options" style="margin-top: 40px;">
+                        <button class="quiz-btn" onclick="selectHouse('R', this)"><i class="fa-solid fa-palette" style="color: blue;"></i> Blue</button>
+                        <button class="quiz-btn" onclick="selectHouse('H', this)"><i class="fa-solid fa-palette" style="color: yellow;"></i> Yellow</button>
+                        <button class="quiz-btn" onclick="selectHouse('G', this)"><i class="fa-solid fa-palette" style="color: red;"></i> Red</button>
+                        <button class="quiz-btn" onclick="selectHouse('S', this)"><i class="fa-solid fa-palette" style="color: green;"></i> Green</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. QUIZ Q3 -->
+        <div class="slide" data-lock="true" data-hub="true" data-question="Can you give an example of why this is important?" data-s1="For example, last week I..." data-s2="This is very important to me because...">
+            <div class="content-wrapper">
+                <h2>Question 3</h2>
+                <div class="glass-panel">
+                    <p style="font-size: 2.2rem; text-align: center; font-family: var(--font-title);">What is the most important thing for you?</p>
+                    <div class="grid-options" style="margin-top: 40px;">
+                        <button class="quiz-btn" onclick="selectHouse('H', this)"><i class="fa-solid fa-heart"></i> Having good friends.</button>
+                        <button class="quiz-btn" onclick="selectHouse('R', this)"><i class="fa-solid fa-book"></i> Reading many books.</button>
+                        <button class="quiz-btn" onclick="selectHouse('G', this)"><i class="fa-solid fa-shield-halved"></i> Not being afraid.</button>
+                        <button class="quiz-btn" onclick="selectHouse('S', this)"><i class="fa-solid fa-trophy"></i> Winning and being the best.</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. QUIZ RESULT -->
+        <div class="slide" data-hub="true" data-question="Do you like your house? Why or why not?" data-s1="I like my house because I am..." data-s2="I don't like it because I am not...">
+            <div class="content-wrapper">
+                <h2>The Hat has spoken!</h2>
+                <div class="house-result-box" id="res-house-glow" style="background: rgba(255,255,255,0.1);">
+                    <div class="house-content">
+                        <p style="font-size: 1.8rem; color: white; text-transform: uppercase; letter-spacing: 3px;">You belong in...</p>
+                        <h1 id="res-house-name">HOGWARTS</h1>
+                        <p style="font-size: 1.5rem; color: white;">You are: <br><b id="res-house-traits" style="font-size: 2.5rem; color: var(--magic-gold); display: block; margin-top: 10px;">Magic</b></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. VOCAB 1: BRAVE -->
+        <div class="slide" data-hub="true" data-question="Who is the bravest person you know?" data-s1="My father is brave because..." data-s2="I think a firefighter is brave because...">
+            <div class="content-wrapper">
+                <h2>New Word: <span class="clickable" onclick="openDict('Brave', 'Not afraid. Ready to face danger.', 'Harry is a brave boy.', 'Are you a brave person?')">Brave</span></h2>
+                <div class="glass-panel panel-split">
+                    <div>
+                        <p style="font-family: var(--font-title); font-size: 2.5rem; color: #fff; line-height: 1.4;">"Gryffindor students are very <span class="clickable" onclick="openDict('Brave', 'Not afraid. Ready to face danger.', 'Harry is a brave boy.', 'Are you a brave person?')" style="color: var(--magic-gold); text-decoration-color: var(--magic-gold);">BRAVE</span>."</p>
+                    </div>
+                    <div class="panel-divider">
+                        <p style="font-size: 1.6rem;">When you are brave, you do things even if they are difficult or scary.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. VOCAB 2: SMART -->
+        <div class="slide" data-hub="true" data-question="Are you smart with numbers or with words?" data-s1="I am smart with numbers because..." data-s2="I am good with words because...">
+            <div class="content-wrapper">
+                <h2>New Word: <span class="clickable" onclick="openDict('Smart', 'Very intelligent. Knowing a lot of things.', 'She is a smart student.', 'Who is the smartest person in your family?')">Smart</span></h2>
+                <div class="glass-panel panel-split">
+                    <div>
+                        <p style="font-family: var(--font-title); font-size: 2.5rem; color: #fff; line-height: 1.4;">"Ravenclaw students are <span class="clickable" onclick="openDict('Smart', 'Very intelligent. Knowing a lot of things.', 'She is a smart student.', 'Who is the smartest person in your family?')" style="color: var(--magic-gold); text-decoration-color: var(--magic-gold);">SMART</span>."</p>
+                    </div>
+                    <div class="panel-divider">
+                        <p style="font-size: 1.6rem;">They love to read books, learn new things, and answer difficult questions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11. VOCAB 3: DARK/BAD -->
+        <div class="slide" data-hub="true" data-question="Do you prefer to play the hero or the bad guy in video games?" data-s1="I prefer to play the hero because..." data-s2="I like playing the bad guy because...">
+            <div class="content-wrapper">
+                <h2>New Word: <span class="clickable" onclick="openDict('Bad', 'Not good. Doing wrong things.', 'He is a bad wizard.', 'What happens to bad guys in movies?')">Bad</span></h2>
+                <div class="glass-panel panel-split">
+                    <div>
+                        <p style="font-family: var(--font-title); font-size: 2.5rem; color: #fff; line-height: 1.4;">"Not every Slytherin is a <span class="clickable" onclick="openDict('Bad', 'Not good. Doing wrong things.', 'He is a bad wizard.', 'What happens to bad guys in movies?')" style="color: var(--brand-red); text-decoration-color: var(--brand-red);">BAD</span> wizard."</p>
+                    </div>
+                    <div class="panel-divider">
+                        <p style="font-size: 1.6rem;">Sometimes, people think they are evil, but they just want to win.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12. VOCAB 4: SCARED -->
+        <div class="slide" data-hub="true" data-question="What makes you feel scared?" data-s1="I feel scared when I see..." data-s2="The dark makes me scared because...">
+            <div class="content-wrapper">
+                <h2>New Word: <span class="clickable" onclick="openDict('Scared', 'Afraid of something.', 'Ron is scared of spiders.', 'Are you scared of heights?')">Scared</span></h2>
+                <div class="glass-panel panel-split">
+                    <div>
+                        <p style="font-family: var(--font-title); font-size: 2.5rem; color: #fff; line-height: 1.4;">"The young boy looked very <span class="clickable" onclick="openDict('Scared', 'Afraid of something.', 'Ron is scared of spiders.', 'Are you scared of heights?')" style="color: var(--magic-cyan); text-decoration-color: var(--magic-cyan);">SCARED</span>."</p>
+                    </div>
+                    <div class="panel-divider">
+                        <p style="font-size: 1.6rem;">When you are scared, your heart beats fast and you want to hide.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13. VOCAB QUIZ (3-TRY) -->
+        <div class="slide" data-lock="true" data-hub="true" data-question="Why do we like brave characters in movies?" data-s1="We like them because they..." data-s2="Brave characters are cool because...">
+            <div class="content-wrapper">
+                <h2><i class="fa-solid fa-shield-halved"></i> Check Your Spells</h2>
+                <p>Fill in the blanks. You have 3 tries.</p>
+                <div class="glass-panel" style="font-size: 2rem; text-align: center; border-color: rgba(255,255,255,0.2);">
+                    "Harry is not <span style="color:var(--magic-gold)">_________</span>. He is very <span style="color:var(--magic-gold)">_________</span>."
+                </div>
+                <div class="grid-options" id="vq-1">
+                    <button class="try-btn" onclick="checkAnswer(this, false, 'vq1')"><span>A)</span> brave / bad</button>
+                    <button class="try-btn" onclick="checkAnswer(this, true, 'vq1')"><span>B)</span> scared / brave</button>
+                    <button class="try-btn" onclick="checkAnswer(this, false, 'vq1')"><span>C)</span> smart / scared</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14. GRAMMAR INTRO: WILL -->
+        <div class="slide" data-hub="true" data-question="What will you do after this class?" data-s1="After this class, I will..." data-s2="I think I will go to...">
+            <div class="content-wrapper">
+                <h2><i class="fa-solid fa-crystal-ball"></i> Grammar: The Future</h2>
+                <p>The Hat looks at the students and makes a prediction about their future.</p>
+                <div class="glass-panel" style="text-align: center; margin-top: 30px;">
+                    <p style="margin: 0; font-size: 1.6rem;">To make a prediction, we use: <br><b style="color:var(--magic-gold); font-size: 3.5rem; font-family: var(--font-title); display: block; margin-top: 20px; text-shadow: 0 0 20px rgba(212,175,55,0.4);">WILL + Verb</b></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15. GRAMMAR PRACTICE 1 -->
+        <div class="slide" data-lock="true" data-hub="true" data-question="Will you be famous one day?" data-s1="Yes, I will be famous for..." data-s2="No, I won't be famous because...">
+            <div class="content-wrapper">
+                <h2><i class="fa-solid fa-magic"></i> Practice 'Will'</h2>
+                <p>Choose the correct sentence to predict the future.</p>
+                <div class="grid-options" id="g1-options" style="margin-top: 40px;">
+                    <button class="try-btn" onclick="checkAnswer(this, false, 'g1')">A) The hat will choosing the house.</button>
+                    <button class="try-btn" onclick="checkAnswer(this, true, 'g1')">B) The hat will choose the house.</button>
+                    <button class="try-btn" onclick="checkAnswer(this, false, 'g1')">C) The hat will chooses the house.</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 16. CHUNK 1: HERMIONE -->
+        <div class="slide" data-hub="false">
+            <div class="content-wrapper">
+                <h2 style="color: var(--magic-cyan); font-size: 3.5rem;"><i class="fa-solid fa-play-circle"></i> Part 1: Hermione</h2>
+                <div class="video-wrapper">
+                    <!-- Embedded chunk 1: 0:11 to 0:43 -->
+                    <iframe src="https://www.youtube.com/embed/z4K2F_OALPQ?start=11&end=43&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <p style="margin-top: 30px; color: var(--magic-gold); font-weight: bold;">Watch how she walks to the chair.</p>
+            </div>
+        </div>
+
+        <!-- 17. HERMIONE ANALYSIS -->
+        <div class="slide" data-hub="true" data-question="Do you talk to yourself when you are nervous? What do you say?" data-s1="When I am nervous, I say..." data-s2="I don't talk, I just...">
+            <div class="content-wrapper">
+                <h2>Hermione's Reaction</h2>
+                <p>When they call her name, she whispers: <b style="color: var(--magic-cyan);">"Oh no, okay, relax."</b></p>
+                <div class="glass-panel">
+                    <p style="font-size: 1.8rem; text-align: center;">She is very smart, but she is also very <b>scared</b> right now.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18. CHUNK 2: DRACO -->
+        <div class="slide" data-hub="false">
+            <div class="content-wrapper">
+                <h2 style="color: var(--magic-cyan); font-size: 3.5rem;"><i class="fa-solid fa-play-circle"></i> Part 2: Draco</h2>
+                <div class="video-wrapper">
+                    <!-- Embedded chunk 2: 0:44 to 0:56 -->
+                    <iframe src="https://www.youtube.com/embed/z4K2F_OALPQ?start=44&end=56&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <p style="margin-top: 30px; color: var(--magic-gold); font-weight: bold;">Watch how fast the hat answers.</p>
+            </div>
+        </div>
+
+        <!-- 19. DRACO ANALYSIS -->
+        <div class="slide" data-hub="true" data-question="Why did the hat answer so fast for Draco?" data-s1="I think the hat answered fast because..." data-s2="Maybe Draco is very...">
+            <div class="content-wrapper">
+                <h2>Draco's Result</h2>
+                <p>The hat doesn't even touch his head. It immediately says <b>"SLYTHERIN!"</b>.</p>
+                <div class="glass-panel">
+                    <p style="font-size: 1.8rem; text-align: center;">Ron says: "Every wizard who went <b style="color: var(--brand-red);">bad</b> was in Slytherin." Is this true?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 20. LIVE CHAT (HERMIONE) -->
+        <div class="slide" data-lock="true" data-hub="true" data-question="Are you happy when your friends succeed?" data-s1="Yes, I am happy because..." data-s2="When my friend wins, I...">
+            <div class="content-wrapper">
+                <h2><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> Texting Hermione</h2>
+                <p>Send a message to Hermione to congratulate her. (3 Tries)</p>
+                
+                <div class="chat-box" style="margin-top: 30px;">
+                    <div class="msg msg-l">
+                        <span style="font-size: 14px; color: #aaa; display: block; margin-bottom: 5px;">Hermione</span>
+                        I can't believe it! I am in Gryffindor!
+                    </div>
+                    <div class="msg msg-r" id="chat-placeholder-1">
+                        ...
+                    </div>
+                </div>
+
+                <div class="grid-options" id="c1-options" style="margin-top: 40px;">
+                    <button class="try-btn" onclick="checkAnswer(this, false, 'c1', 'You will to be great!')"><i class="fa-solid fa-comment"></i> A) You will to be great!</button>
+                    <button class="try-btn" onclick="checkAnswer(this, true, 'c1', 'Congratulations! You will be great.')"><i class="fa-solid fa-comment"></i> B) Congratulations! You will be great.</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21. CHUNK 3: RON -->
+        <div class="slide" data-hub="false">
+            <div class="content-wrapper">
+                <h2 style="color: var(--magic-cyan); font-size: 3.5rem;"><i class="fa-solid fa-play-circle"></i> Part 3: Ron</h2>
+                <div class="video-wrapper">
+                    <!-- Embedded chunk 3: 1:23 to 1:50 -->
+                    <iframe src="https://www.youtube.com/embed/z4K2F_OALPQ?start=83&end=110&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <p style="margin-top: 30px; color: var(--magic-gold); font-weight: bold;">Look at Ron's face.</p>
+            </div>
+        </div>
+
+        <!-- 22. RON ANALYSIS -->
+        <div class="slide" data-hub="true" data-question="Why does the hat say 'Another Weasley'?" data-s1="Because his family..." data-s2="I think he has many...">
+            <div class="content-wrapper">
+                <h2>Ron's Family</h2>
+                <div class="glass-panel panel-split">
+                    <div>
+                        <p style="font-family: var(--font-title); font-size: 2.2rem; font-style: italic; color: var(--magic-cyan);">"Ah! Another Weasley. I know just what to do with you..."</p>
+                    </div>
+                    <div class="panel-divider">
+                        <p style="font-size: 1.6rem; line-height: 1.6;">Ron was very <b>scared</b>, but he goes to Gryffindor like his brothers.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 23. GRAMMAR PRACTICE 2 -->
+        <div class="slide" data-lock="true" data-hub="true" data-question="Will Harry and Ron be good friends?" data-s1="Yes, they will be friends because..." data-s2="I think they will...">
+            <div class="content-wrapper">
+                <h2><i class="fa-solid fa-magic"></i> Practice 'Will'</h2>
+                <p>Ron is happy now. Make a prediction about him.</p>
+                <div class="grid-options" id="g2-options" style="margin-top: 40px;">
+                    <button class="try-btn" onclick="checkAnswer(this, true, 'g2')">A) Ron will make many friends in Gryffindor.</button>
+                    <button class="try-btn" onclick="checkAnswer(this, false, 'g2')">B) Ron will makes many friends.</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24. CHUNK 4: HARRY -->
+        <div class="slide" data-hub="false">
+            <div class="content-wrapper">
+                <h2 style="color: var(--magic-cyan); font-size: 3.5rem;"><i class="fa-solid fa-play-circle"></i> Part 4: Harry</h2>
+                <div class="video-wrapper">
+                    <!-- Embedded chunk 4: 1:53 to 2:46 -->
+                    <iframe src="https://www.youtube.com/embed/z4K2F_OALPQ?start=113&end=166&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <p style="margin-top: 30px; color: var(--magic-gold); font-weight: bold;">Listen to the conversation between Harry and the Hat.</p>
+            </div>
+        </div>
+
+        <!-- 25. HARRY'S CHOICE -->
+        <div class="slide" data-hub="true" data-question="Why does Harry say 'Not Slytherin'?" data-s1="Because he heard that..." data-s2="He thinks Slytherin is...">
+            <div class="content-wrapper">
+                <h2>Harry's Choice</h2>
+                <p>The hat says Harry has talent. Slytherin <b>will help</b> him be great.</p>
+                <div class="glass-panel">
+                    <p style="font-size: 1.8rem; text-align: center;">But Harry whispers: <b style="color: var(--brand-red);">"Not Slytherin. Not Slytherin."</b></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 26. DECISION TREE -->
+        <div class="slide" data-hub="true" id="dec-slide" data-question="What will happen next if he chooses that?" data-s1="If he goes there, he will..." data-s2="He will probably...">
+            <div class="content-wrapper">
+                <h2>Make Your Choice</h2>
+                <p>Imagine you are Harry. The hat offers you power and greatness in Slytherin. What do you do?</p>
+                
+                <div class="grid-options" style="margin-top: 40px;">
+                    <button class="try-btn" onclick="makeChoice('Gryffindor', this)"><i class="fa-solid fa-shield"></i> Say "I want to be brave" (Gryffindor).</button>
+                    <button class="try-btn" onclick="makeChoice('Slytherin', this)"><i class="fa-solid fa-snake"></i> Say "I want to be great" (Slytherin).</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 27. THE HAT'S ANSWER -->
+        <div class="slide" data-hub="true" data-question="Do you think our choices are more important than our talent?" data-s1="Yes, choices are important because..." data-s2="I think talent is better because...">
+            <div class="content-wrapper">
+                <h2>The Hat Decides!</h2>
+                <div class="glass-panel">
+                    <p style="font-size: 2.2rem; text-align: center; color: var(--magic-gold); font-weight: bold;">"Better be... GRYFFINDOR!"</p>
+                </div>
+                <p style="margin-top: 20px;">Harry chose to be good, not just powerful.</p>
+            </div>
+        </div>
+
+        <!-- 28. ROLEPLAY GENERATOR -->
+        <div class="slide" data-hub="true" data-question="Look at your role! You have 1 minute to talk to the Teacher." data-s1="Hello! I am..." data-s2="I think I will...">
+            <div class="content-wrapper">
+                <h2><i class="fa-solid fa-masks-theater"></i> Roleplay</h2>
+                <p>Click the button to draw your character.</p>
+                
+                <div class="glass-panel" style="text-align: center; padding: 60px;">
+                    <button class="nav-btn next" onclick="generateRole(this)" style="margin: 0 auto; background: var(--magic-gold); color: black; font-size: 20px; padding: 20px 40px;">DRAW CHARACTER</button>
+                    <h1 id="r-name" style="display: none; margin-top: 20px; color: var(--magic-cyan); font-size: 3rem;">...</h1>
+                    <p id="r-task" style="display: none; font-size: 1.5rem; color: white; margin-top: 20px;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 29. PERSONAL OPINION -->
+        <div class="slide" data-hub="true" data-question="Which house is the absolute best in your opinion?" data-s1="The best house is... because..." data-s2="I prefer... because they are...">
+            <div class="content-wrapper">
+                <h2>Your Opinion</h2>
+                <p>Now that you know the houses and the characters:</p>
+                <div class="glass-panel" style="text-align: center;">
+                    <p style="margin:0; font-size: 1.8rem; line-height: 1.6;">Are you still happy with the house the Hat gave you at the beginning of the lesson?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30. WRAP UP -->
+        <div class="slide" data-hub="false">
+            <div class="content-wrapper">
+                <h1 style="color: var(--magic-gold); text-shadow: 0 0 30px black;">LESSON COMPLETE</h1>
+                <div class="glass-panel" style="max-width: 800px; margin: 0 auto; padding: 50px; background: rgba(10,12,20,0.85);">
+                    <p style="color: var(--magic-cyan); font-weight: bold; font-family: var(--font-title); font-size: 2rem; margin-bottom: 20px;">YOU LEARNED:</p>
+                    <ul class="dark-list" style="margin-left: 20px;">
+                        <li><i class="fa-solid fa-circle-check" style="color:var(--magic-cyan);"></i> Adjectives (Brave, Smart, Bad, Scared)</li>
+                        <li><i class="fa-solid fa-circle-check" style="color:var(--magic-cyan);"></i> Future Predictions with WILL</li>
+                        <li><i class="fa-solid fa-circle-check" style="color:var(--magic-cyan);"></i> The Sorting Ceremony Story</li>
+                    </ul>
+                </div>
+                <h3 style="margin-top: 40px; font-size: 1.5rem; color: var(--text-main); letter-spacing: 4px;">THANK YOU FOR WATCHING WOLFLIX.</h3>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- HUB DE CONVERSAÇÃO (COLLAPSIBLE) -->
+    <button id="hub-toggle-btn" onclick="toggleSpeakingHub()">
+        <i class="fa-solid fa-comment-dots"></i> <span id="hub-toggle-text">Open Speaking Task</span>
+    </button>
+
+    <div class="speaking-hub" id="speaking-hub">
+        <div class="hub-header">
+            <span><i class="fa-solid fa-microphone-lines"></i> SPEAKING HUB (80% TIME)</span>
+            <button class="close-hub-btn" onclick="toggleSpeakingHub()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <p class="hub-question" id="hub-q">Question goes here?</p>
+        <div class="starters-container" id="hub-starters"></div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="bottom-bar">
+        <button class="nav-btn" id="prev-btn" onclick="prevSlide()" disabled><i class="fa-solid fa-chevron-left"></i> BACK</button>
+        <div class="right-controls">
+            <button class="nav-btn skip" id="skip-btn" onclick="forceUnlock()">SKIP <i class="fa-solid fa-forward-step"></i></button>
+            <div class="step-id" id="step-id">PAGE <span>1</span> / 30</div>
+            <button class="nav-btn next" id="next-btn" onclick="nextSlide()">NEXT <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="p-bar"></div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const currentStepEl = document.getElementById('step-id');
+        const progressBar = document.getElementById('p-bar');
+        const speakingHub = document.getElementById('speaking-hub');
+        const hubToggleBtn = document.getElementById('hub-toggle-btn');
+        const toastContainer = document.getElementById('toast-container');
+        const toastMsg = document.getElementById('toast-msg');
+        
+        let houseScores = { G: 0, S: 0, R: 0, H: 0 };
+        const tries = { vq1: 0, q2: 0, g1: 0, g2: 0, c1: 0 };
+
+        function showToast(msg) {
+            toastMsg.innerText = msg;
+            toastContainer.classList.add('show');
+            setTimeout(() => {
+                toastContainer.classList.remove('show');
+            }, 3500);
+        }
+
+        function update() {
+            slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+            const s = slides[currentSlide];
+            
+            // Generate result at slide 7 (index 7)
+            if (currentSlide === 7) {
+                calculateHouse();
+            }
+
+            // Data-lock logic
+            if(s.dataset.lock === 'true') {
+                nextBtn.disabled = true;
+                skipBtn.style.display = 'block'; 
+            } else {
+                nextBtn.disabled = false;
+                skipBtn.style.display = 'none'; 
+            }
+
+            // Speaking Hub logic
+            if(s.dataset.hub === 'true') {
+                hubToggleBtn.style.display = 'flex';
+                document.getElementById('hub-q').innerText = s.dataset.question;
+                
+                let html = '';
+                if(s.dataset.s1) html += `<button class="starter-btn" onclick="copyStarter(this)">${s.dataset.s1}</button>`;
+                if(s.dataset.s2) html += `<button class="starter-btn" onclick="copyStarter(this)">${s.dataset.s2}</button>`;
+                document.getElementById('hub-starters').innerHTML = html;
+                
+                speakingHub.classList.remove('open');
+                document.getElementById('hub-toggle-text').innerText = "Open Speaking Task";
+            } else {
+                hubToggleBtn.style.display = 'none';
+                speakingHub.classList.remove('open');
+            }
+
+            // Nav buttons update
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.style.display = (currentSlide === slides.length - 1) ? 'none' : 'flex';
+
+            currentStepEl.innerHTML = `PAGE <span>${currentSlide + 1}</span> / 30`;
+            progressBar.style.width = ((currentSlide) / (slides.length - 1)) * 100 + '%';
+            
+            document.getElementById('slides-container').scrollTop = 0;
+        }
+
+        function nextSlide() { 
+            if(currentSlide < slides.length - 1) { 
+                currentSlide++; 
+                update(); 
+            } 
+        }
+        
+        function prevSlide() { 
+            if(currentSlide > 0) { 
+                currentSlide--; 
+                update(); 
+            } 
+        }
+        
+        function selectHouse(houseLetter, btn) {
+            houseScores[houseLetter]++;
+            let siblings = btn.parentElement.children;
+            for(let s of siblings) {
+                s.style.opacity = '0.4';
+                s.style.borderColor = 'rgba(255,255,255,0.05)';
+            }
+            btn.style.opacity = '1';
+            btn.style.borderColor = 'var(--magic-gold)';
+            btn.style.boxShadow = '0 0 15px rgba(212,175,55,0.5)';
+            
+            setTimeout(() => { forceUnlock(); }, 600);
+        }
+
+        function calculateHouse() {
+            let max = 'G';
+            for (let h in houseScores) {
+                if (houseScores[h] > houseScores[max]) {
+                    max = h;
+                }
+            }
+            
+            const houseData = {
+                G: { name: "GRYFFINDOR", color: "rgba(116, 0, 1, 0.8)", traits: "Brave" },
+                S: { name: "SLYTHERIN", color: "rgba(26, 71, 42, 0.8)", traits: "Smart & Ambitious" },
+                R: { name: "RAVENCLAW", color: "rgba(14, 26, 64, 0.8)", traits: "Very Smart" },
+                H: { name: "HUFFLEPUFF", color: "rgba(255, 219, 0, 0.8)", traits: "Good Friend" }
+            };
+
+            const resultObj = houseData[max];
+            document.getElementById('res-house-name').innerText = resultObj.name;
+            document.getElementById('res-house-traits').innerText = resultObj.traits;
+            document.getElementById('res-house-glow').style.background = resultObj.color;
+            
+            if(max === 'H') {
+                document.getElementById('res-house-name').style.color = "#000";
+                document.getElementById('res-house-traits').style.color = "#000";
+            } else {
+                document.getElementById('res-house-name').style.color = "#fff";
+                document.getElementById('res-house-traits').style.color = "var(--magic-gold)";
+            }
+        }
+        
+        function toggleSpeakingHub() {
+            speakingHub.classList.toggle('open');
+            if(speakingHub.classList.contains('open')) {
+                document.getElementById('hub-toggle-text').innerText = "Close Task";
+            } else {
+                document.getElementById('hub-toggle-text').innerText = "Open Speaking Task";
+            }
+        }
+
+        function checkAnswer(btn, isCorrect, qId, chatText = null) {
+            if(btn.classList.contains('correct')) return;
+
+            if (isCorrect) {
+                btn.classList.add('correct');
+                unlockNextSlide();
+                if(chatText) document.getElementById('chat-placeholder-1').innerText = chatText;
+                let siblings = btn.parentElement.children;
+                for(let s of siblings) { if(s !== btn) s.style.opacity = '0.3'; }
+            } else {
+                if(tries[qId] === undefined) tries[qId] = 0;
+                tries[qId]++;
+                btn.classList.add('shake', 'error');
+                setTimeout(() => btn.classList.remove('shake', 'error'), 400);
+                
+                if(tries[qId] >= 3) {
+                    let siblings = btn.parentElement.children;
+                    for(let s of siblings) {
+                        if(s.getAttribute('onclick').includes('true')) {
+                            s.classList.add('correct');
+                            if(chatText) document.getElementById('chat-placeholder-1').innerText = chatText;
+                        } else {
+                            s.style.opacity = '0.3';
+                        }
+                    }
+                    unlockNextSlide();
+                }
+            }
+        }
+
+        function forceUnlock() {
+            unlockNextSlide();
+            setTimeout(() => { nextSlide(); }, 300);
+        }
+
+        function unlockNextSlide() {
+            slides[currentSlide].removeAttribute('data-lock');
+            nextBtn.disabled = false;
+            skipBtn.style.display = 'none';
+            nextBtn.style.transform = "scale(1.1)";
+            nextBtn.style.boxShadow = "0 0 30px rgba(212,175,55,0.8)";
+            setTimeout(() => {
+                nextBtn.style.transform = "scale(1)";
+                nextBtn.style.boxShadow = "0 0 20px rgba(255,255,255,0.2)";
+            }, 500);
+        }
+
+        function makeChoice(choice, btn) {
+            let siblings = btn.parentElement.children;
+            for(let s of siblings) s.classList.remove('selected');
+            btn.classList.add('selected');
+            
+            let slide = document.getElementById('dec-slide');
+            slide.setAttribute('data-question', `Why did you choose ${choice}?`);
+            update();
+        }
+
+        function generateRole(btn) {
+            const roles = [
+                { title: "THE SORTING HAT", desc: "You are the hat. Tell the student their future!" },
+                { title: "THE SCARED STUDENT", desc: "You are very scared. Ask the hat a question." },
+                { title: "RON WEASLEY", desc: "You are Harry's friend. Tell him everything will be fine." }
+            ];
+            let random = roles[Math.floor(Math.random() * roles.length)];
+            
+            document.getElementById('r-name').innerText = random.title;
+            document.getElementById('r-task').innerText = random.desc;
+            document.getElementById('r-name').style.display = 'block';
+            document.getElementById('r-task').style.display = 'block';
+            btn.style.display = 'none';
+        }
+
+        function toggleSidebar(id) {
+            let el = document.getElementById(id);
+            if(!el.classList.contains('right-open')) {
+                document.querySelectorAll('.sidebar-panel').forEach(p => { p.classList.remove('right-open'); });
+                el.classList.add('right-open');
+            } else {
+                el.classList.remove('right-open');
+            }
+        }
+
+        function openDict(word, meaning, example, question) {
+            document.getElementById('v-word').innerHTML = `<i class="fa-solid fa-scroll"></i> ${word}`;
+            document.getElementById('v-meaning').innerText = meaning;
+            document.getElementById('v-example').innerText = `"${example}"`;
+            document.getElementById('v-question').innerText = question;
+            
+            toggleSidebar('vocab-panel');
+        }
+
+        function toggleFullscreen() {
+            try {
+                if (!document.fullscreenElement) {
+                    const el = document.documentElement;
+                    const requestMethod = el.requestFullScreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullScreen;
+                    if (requestMethod) {
+                        let promise = requestMethod.call(el);
+                        if (promise && typeof promise.catch === 'function') {
+                            promise.catch(err => {
+                                showToast("Ecrã Inteiro bloqueado pelo navegador.");
+                            });
+                        }
+                    }
+                } else {
+                    const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                    if (exitMethod) {
+                        let promise = exitMethod.call(document);
+                        if (promise && typeof promise.catch === 'function') {
+                            promise.catch(err => console.warn(err));
+                        }
+                    }
+                }
+            } catch (e) {
+                showToast("Ecrã Inteiro bloqueado.");
+            }
+        }
+
+        function copyStarter(btn) {
+            let originalText = btn.innerText;
+            btn.classList.add('clicked');
+            btn.innerHTML = "<i class='fa-solid fa-microphone-lines'></i> Speak now...";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('clicked');
+            }, 3000);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && !nextBtn.disabled) nextSlide();
+            if (e.key === 'ArrowLeft' && !prevBtn.disabled) prevSlide();
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('right-open'));
+                speakingHub.classList.remove('open');
+                document.getElementById('hub-toggle-text').innerText = "Open Speaking Task";
+            }
+        });
+
+        // Init
+        update();
+    </script>
+</body>
+</html>
